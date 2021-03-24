@@ -10,19 +10,71 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const userExist = users.find( user => {
+    if(user.username === username) return user;
+  });
+  if (!userExist) {
+    return response.status(404).json({ error: "Mensagem de erro"});
+  }
+  request.user = userExist;
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+
+  const { user } = request;
+  if (!user) {
+    return response.status(404).json({ error: "Mensagem de erro"});
+  }
+  
+  if (user.pro){
+    next();
+  } 
+  if (user.todos.length < 10){
+    next();
+  } else {
+    return response.status(403).json({ error: "Mensagem de erro"});
+  }
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+  if (!validate(id)) {
+    return response.status(400).json({ error: "Mensagem de erro"});
+  }
+  const { username } = request.headers;
+  const user = users.find( user => {
+    if(user.username === username) return user;
+  });
+  if (!user) {
+    return response.status(404).json({ error: "Mensagem de erro"});
+  }
+  
+  const todoExist = user.todos.find(item =>{
+    if (item.id === id){
+      return item;
+    } 
+  });
+  if (!todoExist) {
+    return response.status(404).json({ error: "Mensagem de erro"});
+  }
+  request.todo = todoExist;
+  request.user = user;
+next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+  const userExist = users.find( user => {
+    if(user.id === id) return user;
+  });
+  if (!userExist) {
+    return response.status(404).json({ error: "Mensagem de erro"});
+  }
+  request.user = userExist;
+  next();
 }
 
 app.post('/users', (request, response) => {
